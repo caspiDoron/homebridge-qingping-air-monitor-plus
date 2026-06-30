@@ -9,11 +9,12 @@ export declare class QingpingAirMonitorPlusPlatform implements DynamicPlatformPl
     private readonly client;
     private readonly rules;
     private readonly history?;
-    private monitorAccessory?;
+    private monitorAccessories?;
     private pollTimer?;
     constructor(log: Logger, config: PlatformConfig, api: API);
     configureAccessory(accessory: PlatformAccessory): void;
     private start;
     private pollOnce;
     private getOrCreateAccessory;
+    private unregisterLegacyAccessory;
 }

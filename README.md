@@ -10,21 +10,23 @@ Some existing Air Monitor 2 Homebridge plugins use local Xiaomi/MIoT access with
 
 Local mode may be added later only if a Qingping-native local protocol is confirmed.
 
-## HomeKit Services
+## HomeKit Accessories
 
-- Temperature Sensor
-- Humidity Sensor
-- Air Quality Sensor with PM2.5, PM10, and VOC density where available
-- Carbon Dioxide Sensor
-- Battery Service
+- Temperature
+- Humidity
+- Air Quality with PM2.5, PM10, and VOC density where available
+- Carbon Dioxide
+- Battery
 - Noise Level as a Light Sensor
-- Recommendation and alert sensors:
+- Recommendation and alert accessories:
   - Ventilation Needed
   - Air Purifier Recommended
   - Humidifier Recommended
   - Dehumidifier Recommended
   - Quiet Mode Recommended
   - Qingping Cloud Stale
+
+Each item is exposed as a separate named HomeKit accessory. This avoids Apple Home's generic multi-service onboarding names such as `Occupancy Sensor 2`.
 
 ## Noise Level
 

@@ -7,7 +7,7 @@ import type {
   PlatformConfig,
   Service,
 } from 'homebridge';
-import { MonitorAccessory } from './accessories/monitorAccessory';
+import { MonitorAccessoryGroup } from './accessories/monitorAccessoryGroup';
 import { QingpingCloudClient } from './clients/qingpingCloudClient';
 import { HistoryStore } from './history/historyStore';
 import {
@@ -29,7 +29,7 @@ export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
   private readonly client: QingpingCloudClient;
   private readonly rules: RuleEngine;
   private readonly history?: HistoryStore;
-  private monitorAccessory?: MonitorAccessory;
+  private monitorAccessories?: MonitorAccessoryGroup;
   private pollTimer?: NodeJS.Timeout;
 
   constructor(
@@ -76,19 +76,19 @@ export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
   private async pollOnce(): Promise<void> {
     try {
       const reading = await this.client.fetchReading();
-      const accessory = this.getOrCreateAccessory(reading);
-      if (!this.monitorAccessory) {
-        this.monitorAccessory = new MonitorAccessory(
+      this.unregisterLegacyAccessory(reading);
+
+      if (!this.monitorAccessories) {
+        this.monitorAccessories = new MonitorAccessoryGroup(
           this.log,
           this.api,
-          accessory,
-          this,
+          (key, name) => this.getOrCreateAccessory(reading, key, name),
           this.config.exposeNoiseAsLightSensor !== false,
         );
       }
 
       const alerts = this.rules.evaluate(reading);
-      this.monitorAccessory.update(reading, alerts);
+      this.monitorAccessories.update(reading, alerts);
       this.history?.append(reading, alerts);
 
       this.log.debug(formatReading(reading));
@@ -98,19 +98,32 @@ export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
     }
   }
 
-  private getOrCreateAccessory(reading: QingpingReading): PlatformAccessory {
-    const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${reading.id}`);
+  private getOrCreateAccessory(reading: QingpingReading, key: string, name: string): PlatformAccessory {
+    const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${reading.id}:${key}`);
     const cached = this.accessories.get(uuid);
     if (cached) {
       return cached;
     }
 
-    const accessory = new this.api.platformAccessory(reading.name, uuid);
+    const accessory = new this.api.platformAccessory(name, uuid);
     accessory.context.deviceId = reading.id;
+    accessory.context.serviceKey = key;
     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     this.accessories.set(uuid, accessory);
-    this.log.info(`Registered Qingping accessory: ${reading.name} (${reading.id})`);
+    this.log.info(`Registered Qingping accessory: ${name} (${reading.id}/${key})`);
     return accessory;
+  }
+
+  private unregisterLegacyAccessory(reading: QingpingReading): void {
+    const legacyUuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${reading.id}`);
+    const legacy = this.accessories.get(legacyUuid);
+    if (!legacy) {
+      return;
+    }
+
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [legacy]);
+    this.accessories.delete(legacyUuid);
+    this.log.info(`Removed legacy bundled Qingping accessory: ${reading.name}`);
   }
 }
 

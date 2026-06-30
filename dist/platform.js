@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QingpingAirMonitorPlusPlatform = void 0;
-const monitorAccessory_1 = require("./accessories/monitorAccessory");
+const monitorAccessoryGroup_1 = require("./accessories/monitorAccessoryGroup");
 const qingpingCloudClient_1 = require("./clients/qingpingCloudClient");
 const historyStore_1 = require("./history/historyStore");
 const settings_1 = require("./settings");
@@ -16,7 +16,7 @@ class QingpingAirMonitorPlusPlatform {
     client;
     rules;
     history;
-    monitorAccessory;
+    monitorAccessories;
     pollTimer;
     constructor(log, config, api) {
         this.log = log;
@@ -50,12 +50,12 @@ class QingpingAirMonitorPlusPlatform {
     async pollOnce() {
         try {
             const reading = await this.client.fetchReading();
-            const accessory = this.getOrCreateAccessory(reading);
-            if (!this.monitorAccessory) {
-                this.monitorAccessory = new monitorAccessory_1.MonitorAccessory(this.log, this.api, accessory, this, this.config.exposeNoiseAsLightSensor !== false);
+            this.unregisterLegacyAccessory(reading);
+            if (!this.monitorAccessories) {
+                this.monitorAccessories = new monitorAccessoryGroup_1.MonitorAccessoryGroup(this.log, this.api, (key, name) => this.getOrCreateAccessory(reading, key, name), this.config.exposeNoiseAsLightSensor !== false);
             }
             const alerts = this.rules.evaluate(reading);
-            this.monitorAccessory.update(reading, alerts);
+            this.monitorAccessories.update(reading, alerts);
             this.history?.append(reading, alerts);
             this.log.debug(formatReading(reading));
         }
@@ -64,18 +64,29 @@ class QingpingAirMonitorPlusPlatform {
             this.log.warn(`Qingping cloud polling failed: ${message}`);
         }
     }
-    getOrCreateAccessory(reading) {
-        const uuid = this.api.hap.uuid.generate(`${settings_1.PLATFORM_NAME}:${reading.id}`);
+    getOrCreateAccessory(reading, key, name) {
+        const uuid = this.api.hap.uuid.generate(`${settings_1.PLATFORM_NAME}:${reading.id}:${key}`);
         const cached = this.accessories.get(uuid);
         if (cached) {
             return cached;
         }
-        const accessory = new this.api.platformAccessory(reading.name, uuid);
+        const accessory = new this.api.platformAccessory(name, uuid);
         accessory.context.deviceId = reading.id;
+        accessory.context.serviceKey = key;
         this.api.registerPlatformAccessories(settings_1.PLUGIN_NAME, settings_1.PLATFORM_NAME, [accessory]);
         this.accessories.set(uuid, accessory);
-        this.log.info(`Registered Qingping accessory: ${reading.name} (${reading.id})`);
+        this.log.info(`Registered Qingping accessory: ${name} (${reading.id}/${key})`);
         return accessory;
+    }
+    unregisterLegacyAccessory(reading) {
+        const legacyUuid = this.api.hap.uuid.generate(`${settings_1.PLATFORM_NAME}:${reading.id}`);
+        const legacy = this.accessories.get(legacyUuid);
+        if (!legacy) {
+            return;
+        }
+        this.api.unregisterPlatformAccessories(settings_1.PLUGIN_NAME, settings_1.PLATFORM_NAME, [legacy]);
+        this.accessories.delete(legacyUuid);
+        this.log.info(`Removed legacy bundled Qingping accessory: ${reading.name}`);
     }
 }
 exports.QingpingAirMonitorPlusPlatform = QingpingAirMonitorPlusPlatform;
