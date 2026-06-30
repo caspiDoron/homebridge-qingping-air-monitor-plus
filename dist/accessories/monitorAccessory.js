@@ -70,7 +70,18 @@ class MonitorAccessory {
             service = this.accessory.addService(ServiceClass, name, subtype);
         }
         service.setCharacteristic(this.Characteristic.Name, name);
+        this.setConfiguredName(service, name);
         return service;
+    }
+    setConfiguredName(service, name) {
+        const configuredName = this.Characteristic.ConfiguredName;
+        if (!configuredName) {
+            return;
+        }
+        if (!service.testCharacteristic(configuredName)) {
+            service.addCharacteristic(configuredName);
+        }
+        service.setCharacteristic(configuredName, name);
     }
     updateAirQuality(reading) {
         const service = this.services.get('airQuality');

@@ -15,6 +15,7 @@ export declare class MonitorAccessory {
     private setupSensorServices;
     private setupAlertServices;
     private getService;
+    private setConfiguredName;
     private updateAirQuality;
     private updateCarbonDioxide;
     private updateBattery;

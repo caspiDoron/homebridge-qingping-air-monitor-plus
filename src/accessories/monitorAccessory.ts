@@ -78,7 +78,20 @@ export class MonitorAccessory {
       service = this.accessory.addService(ServiceClass, name, subtype);
     }
     service.setCharacteristic(this.Characteristic.Name, name);
+    this.setConfiguredName(service, name);
     return service;
+  }
+
+  private setConfiguredName(service: Service, name: string): void {
+    const configuredName = this.Characteristic.ConfiguredName;
+    if (!configuredName) {
+      return;
+    }
+
+    if (!service.testCharacteristic(configuredName)) {
+      service.addCharacteristic(configuredName);
+    }
+    service.setCharacteristic(configuredName, name);
   }
 
   private updateAirQuality(reading: QingpingReading): void {
