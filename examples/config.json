@@ -1,0 +1,26 @@
+{
+  "platforms": [
+    {
+      "platform": "QingpingAirMonitorPlus",
+      "name": "Qingping Air Monitor Plus",
+      "clientId": "YOUR_QINGPING_CLIENT_ID",
+      "clientSecret": "YOUR_QINGPING_CLIENT_SECRET",
+      "deviceName": "Living Room",
+      "pollIntervalSeconds": 300,
+      "exposeNoiseAsLightSensor": true,
+      "enableHistory": true,
+      "thresholds": {
+        "co2DetectPpm": 1000,
+        "co2ClearPpm": 900,
+        "pm25Poor": 35,
+        "pm10Poor": 100,
+        "tvocPoor": 300,
+        "humidityLow": 35,
+        "humidityHigh": 65,
+        "temperatureLow": 18,
+        "temperatureHigh": 28,
+        "noiseHighDb": 60
+      }
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+import type {
+  API,
+  Characteristic,
+  DynamicPlatformPlugin,
+  Logger,
+  PlatformAccessory,
+  PlatformConfig,
+  Service,
+} from 'homebridge';
+import { MonitorAccessory } from './accessories/monitorAccessory';
+import { QingpingCloudClient } from './clients/qingpingCloudClient';
+import { HistoryStore } from './history/historyStore';
+import {
+  DEFAULT_POLL_INTERVAL_SECONDS,
+  DEFAULT_THRESHOLDS,
+  MIN_POLL_INTERVAL_SECONDS,
+  PLATFORM_NAME,
+  PLUGIN_NAME,
+} from './settings';
+import type { AlertThresholds, QingpingPlatformConfig, QingpingReading } from './types';
+import { RuleEngine } from './rules/ruleEngine';
+
+export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
+  public readonly Service: typeof Service;
+  public readonly Characteristic: typeof Characteristic;
+
+  private readonly accessories = new Map<string, PlatformAccessory>();
+  private readonly config: QingpingPlatformConfig;
+  private readonly client: QingpingCloudClient;
+  private readonly rules: RuleEngine;
+  private readonly history?: HistoryStore;
+  private monitorAccessory?: MonitorAccessory;
+  private pollTimer?: NodeJS.Timeout;
+
+  constructor(
+    public readonly log: Logger,
+    config: PlatformConfig,
+    public readonly api: API,
+  ) {
+    this.Service = api.hap.Service;
+    this.Characteristic = api.hap.Characteristic;
+    this.config = config as QingpingPlatformConfig;
+    this.client = new QingpingCloudClient(log, this.config);
+    this.rules = new RuleEngine(resolveThresholds(this.config));
+
+    if (this.config.enableHistory !== false) {
+      this.history = new HistoryStore(log, api, Number(this.config.historyRetentionDays ?? 30));
+    }
+
+    this.api.on('didFinishLaunching', () => {
+      this.start();
+    });
+
+    this.api.on('shutdown', () => {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+      }
+    });
+  }
+
+  configureAccessory(accessory: PlatformAccessory): void {
+    this.accessories.set(accessory.UUID, accessory);
+  }
+
+  private start(): void {
+    const pollSeconds = Math.max(
+      MIN_POLL_INTERVAL_SECONDS,
+      Number(this.config.pollIntervalSeconds ?? DEFAULT_POLL_INTERVAL_SECONDS),
+    );
+
+    this.pollOnce();
+    this.pollTimer = setInterval(() => this.pollOnce(), pollSeconds * 1000);
+    this.log.info(`Qingping Air Monitor Plus polling every ${pollSeconds} seconds`);
+  }
+
+  private async pollOnce(): Promise<void> {
+    try {
+      const reading = await this.client.fetchReading();
+      const accessory = this.getOrCreateAccessory(reading);
+      if (!this.monitorAccessory) {
+        this.monitorAccessory = new MonitorAccessory(
+          this.log,
+          this.api,
+          accessory,
+          this,
+          this.config.exposeNoiseAsLightSensor !== false,
+        );
+      }
+
+      const alerts = this.rules.evaluate(reading);
+      this.monitorAccessory.update(reading, alerts);
+      this.history?.append(reading, alerts);
+
+      this.log.debug(formatReading(reading));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.log.warn(`Qingping cloud polling failed: ${message}`);
+    }
+  }
+
+  private getOrCreateAccessory(reading: QingpingReading): PlatformAccessory {
+    const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${reading.id}`);
+    const cached = this.accessories.get(uuid);
+    if (cached) {
+      return cached;
+    }
+
+    const accessory = new this.api.platformAccessory(reading.name, uuid);
+    accessory.context.deviceId = reading.id;
+    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    this.accessories.set(uuid, accessory);
+    this.log.info(`Registered Qingping accessory: ${reading.name} (${reading.id})`);
+    return accessory;
+  }
+}
+
+function resolveThresholds(config: QingpingPlatformConfig): AlertThresholds {
+  const thresholds = { ...DEFAULT_THRESHOLDS, ...config.thresholds };
+
+  if (thresholds.co2ClearPpm >= thresholds.co2DetectPpm) {
+    thresholds.co2ClearPpm = Math.round(thresholds.co2DetectPpm * 0.9);
+  }
+
+  return thresholds;
+}
+
+function formatReading(reading: QingpingReading): string {
+  return [
+    `Qingping reading for ${reading.name}:`,
+    formatValue('T', reading.temperatureC, 'C'),
+    formatValue('RH', reading.humidityPercent, '%'),
+    formatValue('CO2', reading.co2Ppm, 'ppm'),
+    formatValue('PM2.5', reading.pm25, 'ug/m3'),
+    formatValue('PM10', reading.pm10, 'ug/m3'),
+    formatValue('TVOC', reading.tvoc, ''),
+    formatValue('Noise', reading.noiseDb, 'dB'),
+    formatValue('Battery', reading.batteryPercent, '%'),
+  ].filter(Boolean).join(' ');
+}
+
+function formatValue(label: string, value: number | undefined, unit: string): string {
+  return value === undefined ? '' : `${label}=${value}${unit}`;
+}

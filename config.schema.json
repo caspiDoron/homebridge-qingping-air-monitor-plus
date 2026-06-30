@@ -1,0 +1,144 @@
+{
+  "pluginAlias": "QingpingAirMonitorPlus",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Cloud-first Qingping Air Monitor plugin. Noise is exposed as a Light Sensor because HomeKit has no native decibel sensor; the displayed lux value equals dB.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Platform Name",
+        "type": "string",
+        "default": "Qingping Air Monitor Plus"
+      },
+      "clientId": {
+        "title": "Qingping Client ID",
+        "type": "string",
+        "required": true
+      },
+      "clientSecret": {
+        "title": "Qingping Client Secret",
+        "type": "string",
+        "required": true
+      },
+      "scope": {
+        "title": "OAuth Scope",
+        "type": "string",
+        "default": "device_full_access"
+      },
+      "deviceId": {
+        "title": "Device ID",
+        "description": "Optional. If empty, the first Qingping cloud device is used.",
+        "type": "string"
+      },
+      "deviceName": {
+        "title": "Device Name",
+        "description": "Optional fallback selector when Device ID is empty.",
+        "type": "string"
+      },
+      "pollIntervalSeconds": {
+        "title": "Polling Interval",
+        "description": "Seconds between cloud refreshes. Minimum 30 seconds.",
+        "type": "integer",
+        "default": 300,
+        "minimum": 30
+      },
+      "exposeNoiseAsLightSensor": {
+        "title": "Expose Noise as Light Sensor",
+        "description": "HomeKit has no dB sensor. When enabled, the Noise Level light sensor shows lux equal to dB.",
+        "type": "boolean",
+        "default": true
+      },
+      "enableHistory": {
+        "title": "Save Local History",
+        "type": "boolean",
+        "default": true
+      },
+      "historyRetentionDays": {
+        "title": "History Retention Days",
+        "type": "integer",
+        "default": 30,
+        "minimum": 0
+      },
+      "thresholds": {
+        "title": "Alert Thresholds",
+        "type": "object",
+        "properties": {
+          "co2DetectPpm": {
+            "title": "CO2 Alert Above",
+            "type": "integer",
+            "default": 1000
+          },
+          "co2ClearPpm": {
+            "title": "CO2 Alert Clears Below",
+            "type": "integer",
+            "default": 900
+          },
+          "pm25Poor": {
+            "title": "PM2.5 Alert Above",
+            "type": "integer",
+            "default": 35
+          },
+          "pm10Poor": {
+            "title": "PM10 Alert Above",
+            "type": "integer",
+            "default": 100
+          },
+          "tvocPoor": {
+            "title": "TVOC Alert Above",
+            "type": "integer",
+            "default": 300
+          },
+          "humidityLow": {
+            "title": "Humidity Low Below",
+            "type": "integer",
+            "default": 35
+          },
+          "humidityHigh": {
+            "title": "Humidity High Above",
+            "type": "integer",
+            "default": 65
+          },
+          "temperatureLow": {
+            "title": "Temperature Low Below",
+            "type": "integer",
+            "default": 18
+          },
+          "temperatureHigh": {
+            "title": "Temperature High Above",
+            "type": "integer",
+            "default": 28
+          },
+          "noiseHighDb": {
+            "title": "Noise Alert Above",
+            "description": "Measured in dB. HomeKit will display the live value as lux if noise LightSensor is enabled.",
+            "type": "integer",
+            "default": 60
+          },
+          "staleAfterMinutes": {
+            "title": "Cloud Data Stale After",
+            "type": "integer",
+            "default": 20
+          },
+          "lowBatteryPercent": {
+            "title": "Low Battery Below",
+            "type": "integer",
+            "default": 20
+          }
+        }
+      },
+      "tokenUrl": {
+        "title": "OAuth Token URL",
+        "description": "Advanced override.",
+        "type": "string",
+        "default": "https://oauth.cleargrass.com/oauth2/token"
+      },
+      "devicesUrl": {
+        "title": "Devices API URL",
+        "description": "Advanced override.",
+        "type": "string",
+        "default": "https://apis.cleargrass.com/v1/apis/devices"
+      }
+    }
+  }
+}

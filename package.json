@@ -1,0 +1,45 @@
+{
+  "name": "homebridge-qingping-air-monitor-plus",
+  "version": "0.1.0",
+  "description": "Cloud-first Homebridge plugin for Qingping Air Monitor devices with alerts, history, and noise-as-light sensor support.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": "Doron",
+  "keywords": [
+    "homebridge-plugin",
+    "qingping",
+    "cleargrass",
+    "air-monitor",
+    "air-quality",
+    "homekit",
+    "co2",
+    "pm25",
+    "noise"
+  ],
+  "engines": {
+    "node": ">=22.12.0",
+    "homebridge": ">=2.0.0"
+  },
+  "homebridge": {
+    "pluginAlias": "QingpingAirMonitorPlus",
+    "pluginType": "platform"
+  },
+  "files": [
+    "dist",
+    "config.schema.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "homebridge": "^2.1.0",
+    "typescript": "^5.7.2"
+  }
+}
