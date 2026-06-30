@@ -34,7 +34,6 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "lint": "eslint src --ext .ts",
-    "prepare": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {},
