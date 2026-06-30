@@ -18,6 +18,7 @@ Local mode may be added later only if a Qingping-native local protocol is confir
 - Carbon Dioxide
 - Battery
 - Noise Level as a Light Sensor
+- Optional metric value tiles as Light Sensors for CO2, PM2.5, PM10, and TVOC
 - Recommendation and alert accessories:
   - Ventilation Needed
   - Air Purifier Recommended
@@ -27,6 +28,13 @@ Local mode may be added later only if a Qingping-native local protocol is confir
   - Qingping Cloud Stale
 
 Each item is exposed as a separate named HomeKit accessory. This avoids Apple Home's generic multi-service onboarding names such as `Occupancy Sensor 2`.
+
+Apple Home decides what each tile shows. For example, it often shows a CO2 tile as a status sensor and hides the ppm value until you tap into details. If `exposeMetricTilesAsLightSensors` is enabled, the plugin creates extra visible numeric tiles:
+
+- `CO2 Level`: lux equals ppm
+- `PM2.5 Level`: lux equals ug/m3
+- `PM10 Level`: lux equals ug/m3
+- `TVOC Level`: lux equals VOC/TVOC value returned by Qingping
 
 ## Noise Level
 
@@ -59,6 +67,7 @@ History is still stored with the correct `noiseDb` field.
       "deviceName": "Living Room",
       "pollIntervalSeconds": 300,
       "exposeNoiseAsLightSensor": true,
+      "exposeMetricTilesAsLightSensors": false,
       "enableHistory": true
     }
   ]

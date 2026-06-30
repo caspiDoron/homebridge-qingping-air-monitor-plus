@@ -8,6 +8,7 @@
       "deviceName": "Living Room",
       "pollIntervalSeconds": 300,
       "exposeNoiseAsLightSensor": true,
+      "exposeMetricTilesAsLightSensors": false,
       "enableHistory": true,
       "thresholds": {
         "co2DetectPpm": 1000,

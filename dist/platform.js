@@ -52,7 +52,7 @@ class QingpingAirMonitorPlusPlatform {
             const reading = await this.client.fetchReading();
             this.unregisterLegacyAccessory(reading);
             if (!this.monitorAccessories) {
-                this.monitorAccessories = new monitorAccessoryGroup_1.MonitorAccessoryGroup(this.log, this.api, (key, name) => this.getOrCreateAccessory(reading, key, name), this.config.exposeNoiseAsLightSensor !== false);
+                this.monitorAccessories = new monitorAccessoryGroup_1.MonitorAccessoryGroup(this.log, this.api, (key, name) => this.getOrCreateAccessory(reading, key, name), this.config.exposeNoiseAsLightSensor !== false, this.config.exposeMetricTilesAsLightSensors === true);
             }
             const alerts = this.rules.evaluate(reading);
             this.monitorAccessories.update(reading, alerts);

@@ -84,6 +84,7 @@ export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
           this.api,
           (key, name) => this.getOrCreateAccessory(reading, key, name),
           this.config.exposeNoiseAsLightSensor !== false,
+          this.config.exposeMetricTilesAsLightSensors === true,
         );
       }
 

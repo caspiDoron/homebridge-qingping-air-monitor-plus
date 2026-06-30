@@ -49,6 +49,12 @@
         "type": "boolean",
         "default": true
       },
+      "exposeMetricTilesAsLightSensors": {
+        "title": "Expose Metric Value Tiles",
+        "description": "Adds extra Light Sensor tiles for CO2, PM2.5, PM10, and TVOC so Apple Home shows values on tiles. The displayed lux value equals the real metric value.",
+        "type": "boolean",
+        "default": false
+      },
       "enableHistory": {
         "title": "Save Local History",
         "type": "boolean",

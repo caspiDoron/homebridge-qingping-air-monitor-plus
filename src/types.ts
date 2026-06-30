@@ -10,6 +10,7 @@ export interface QingpingPlatformConfig {
   deviceName?: string;
   pollIntervalSeconds?: number;
   exposeNoiseAsLightSensor?: boolean;
+  exposeMetricTilesAsLightSensors?: boolean;
   enableHistory?: boolean;
   historyRetentionDays?: number;
   thresholds?: Partial<AlertThresholds>;

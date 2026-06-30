@@ -6,9 +6,10 @@ export declare class MonitorAccessoryGroup {
     private readonly api;
     private readonly getAccessory;
     private readonly exposeNoiseAsLightSensor;
+    private readonly exposeMetricTilesAsLightSensors;
     private readonly Service;
     private readonly Characteristic;
-    constructor(log: Logger, api: API, getAccessory: AccessoryFactory, exposeNoiseAsLightSensor: boolean);
+    constructor(log: Logger, api: API, getAccessory: AccessoryFactory, exposeNoiseAsLightSensor: boolean, exposeMetricTilesAsLightSensors: boolean);
     update(reading: QingpingReading, alerts: AlertState): void;
     private updateTemperature;
     private updateHumidity;
@@ -16,6 +17,7 @@ export declare class MonitorAccessoryGroup {
     private updateCarbonDioxide;
     private updateBattery;
     private updateNoise;
+    private updateMetricTile;
     private updateAlert;
     private getPrimaryService;
     private setupInformationService;

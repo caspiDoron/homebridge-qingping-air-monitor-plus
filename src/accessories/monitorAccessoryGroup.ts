@@ -14,6 +14,7 @@ export class MonitorAccessoryGroup {
     private readonly api: API,
     private readonly getAccessory: AccessoryFactory,
     private readonly exposeNoiseAsLightSensor: boolean,
+    private readonly exposeMetricTilesAsLightSensors: boolean,
   ) {
     this.Service = api.hap.Service;
     this.Characteristic = api.hap.Characteristic;
@@ -28,6 +29,13 @@ export class MonitorAccessoryGroup {
 
     if (this.exposeNoiseAsLightSensor) {
       this.updateNoise(reading);
+    }
+
+    if (this.exposeMetricTilesAsLightSensors) {
+      this.updateMetricTile('co2Tile', `${reading.name} CO2 Level`, reading.co2Ppm, 100000);
+      this.updateMetricTile('pm25Tile', `${reading.name} PM2.5 Level`, reading.pm25, 1000);
+      this.updateMetricTile('pm10Tile', `${reading.name} PM10 Level`, reading.pm10, 1000);
+      this.updateMetricTile('tvocTile', `${reading.name} TVOC Level`, reading.tvoc, 5000);
     }
 
     this.updateAlert('ventilationNeeded', 'Ventilation Needed', alerts.ventilationNeeded);
@@ -118,6 +126,14 @@ export class MonitorAccessoryGroup {
     }
     const service = this.getPrimaryService('noise', `${reading.name} Noise Level`, this.Service.LightSensor);
     service.updateCharacteristic(this.Characteristic.CurrentAmbientLightLevel, clamp(reading.noiseDb, 0.0001, 150));
+  }
+
+  private updateMetricTile(key: string, name: string, value: number | undefined, max: number): void {
+    if (value === undefined) {
+      return;
+    }
+    const service = this.getPrimaryService(key, name, this.Service.LightSensor);
+    service.updateCharacteristic(this.Characteristic.CurrentAmbientLightLevel, clamp(value, 0.0001, max));
   }
 
   private updateAlert(key: string, name: string, active: boolean): void {
