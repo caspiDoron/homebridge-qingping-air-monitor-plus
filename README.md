@@ -16,16 +16,15 @@ Local mode may be added later only if a Qingping-native local protocol is confir
 - Humidity
 - Air Quality with PM2.5, PM10, and VOC density where available
 - Carbon Dioxide
-- Battery
-- Noise Level as a Light Sensor
+- Optional Noise Level as a Light Sensor
 - Optional metric value tiles as Light Sensors for CO2, PM2.5, PM10, and TVOC
-- Recommendation and alert accessories:
-  - Ventilation Needed
+- Recommendation and alert accessories, exposed as Contact Sensors for HomeKit notifications:
+  - Open Window Recommended
   - Air Purifier Recommended
   - Humidifier Recommended
   - Dehumidifier Recommended
-  - Quiet Mode Recommended
-  - Qingping Cloud Stale
+  - Loud Noise Detected
+  - Qingping Cloud Offline
 
 Each item is exposed as a separate named HomeKit accessory. This avoids Apple Home's generic multi-service onboarding names such as `Occupancy Sensor 2`.
 
@@ -38,7 +37,9 @@ Apple Home decides what each tile shows. For example, it often shows a CO2 tile 
 
 ## Noise Level
 
-HomeKit does not provide a native decibel sensor. When `exposeNoiseAsLightSensor` is enabled, this plugin exposes noise as a Light Sensor named `Noise Level`.
+HomeKit does not provide a native decibel sensor. By default this plugin exposes noise only as an alert named `Loud Noise Detected`.
+
+When `exposeNoiseAsLightSensor` is enabled, this plugin also exposes noise as a Light Sensor named `Noise Level`.
 
 If Apple Home shows:
 
@@ -66,7 +67,7 @@ History is still stored with the correct `noiseDb` field.
       "clientSecret": "YOUR_QINGPING_CLIENT_SECRET",
       "deviceName": "Living Room",
       "pollIntervalSeconds": 300,
-      "exposeNoiseAsLightSensor": true,
+      "exposeNoiseAsLightSensor": false,
       "exposeMetricTilesAsLightSensors": false,
       "enableHistory": true
     }

@@ -17,4 +17,5 @@ export declare class QingpingAirMonitorPlusPlatform implements DynamicPlatformPl
     private pollOnce;
     private getOrCreateAccessory;
     private unregisterLegacyAccessory;
+    private unregisterObsoleteAccessories;
 }

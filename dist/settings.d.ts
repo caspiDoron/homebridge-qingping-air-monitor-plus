@@ -16,5 +16,4 @@ export declare const DEFAULT_THRESHOLDS: {
     temperatureHigh: number;
     noiseHighDb: number;
     staleAfterMinutes: number;
-    lowBatteryPercent: number;
 };

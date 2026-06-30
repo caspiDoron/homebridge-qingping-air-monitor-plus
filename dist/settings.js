@@ -19,5 +19,4 @@ exports.DEFAULT_THRESHOLDS = {
     temperatureHigh: 28,
     noiseHighDb: 60,
     staleAfterMinutes: 20,
-    lowBatteryPercent: 20,
 };

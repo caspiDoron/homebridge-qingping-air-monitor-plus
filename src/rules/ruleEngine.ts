@@ -16,7 +16,6 @@ export class RuleEngine {
     const pm10High = isAbove(reading.pm10, this.thresholds.pm10Poor);
     const vocHigh = isAbove(reading.tvoc, this.thresholds.tvocPoor);
     const noiseHigh = isAbove(reading.noiseDb, this.thresholds.noiseHighDb);
-    const lowBattery = isBelow(reading.batteryPercent, this.thresholds.lowBatteryPercent);
     const stale = isStale(reading.timestamp, this.thresholds.staleAfterMinutes) || !reading.online;
 
     const particulateHigh = pm25High || pm10High;
@@ -30,7 +29,6 @@ export class RuleEngine {
       temperatureLow,
       temperatureHigh,
       noiseHigh,
-      lowBattery,
       stale,
       ventilationNeeded: this.co2High || vocHigh || humidityHigh,
       airPurifierRecommended: particulateHigh || vocHigh,

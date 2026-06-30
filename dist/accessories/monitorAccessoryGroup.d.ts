@@ -15,7 +15,6 @@ export declare class MonitorAccessoryGroup {
     private updateHumidity;
     private updateAirQuality;
     private updateCarbonDioxide;
-    private updateBattery;
     private updateNoise;
     private updateMetricTile;
     private updateAlert;

@@ -7,7 +7,7 @@
       "clientSecret": "YOUR_QINGPING_CLIENT_SECRET",
       "deviceName": "Living Room",
       "pollIntervalSeconds": 300,
-      "exposeNoiseAsLightSensor": true,
+      "exposeNoiseAsLightSensor": false,
       "exposeMetricTilesAsLightSensors": false,
       "enableHistory": true,
       "thresholds": {

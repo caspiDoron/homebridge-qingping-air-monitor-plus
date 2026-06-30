@@ -77,6 +77,7 @@ export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
     try {
       const reading = await this.client.fetchReading();
       this.unregisterLegacyAccessory(reading);
+      this.unregisterObsoleteAccessories(reading);
 
       if (!this.monitorAccessories) {
         this.monitorAccessories = new MonitorAccessoryGroup(
@@ -126,6 +127,41 @@ export class QingpingAirMonitorPlusPlatform implements DynamicPlatformPlugin {
     this.accessories.delete(legacyUuid);
     this.log.info(`Removed legacy bundled Qingping accessory: ${reading.name}`);
   }
+
+  private unregisterObsoleteAccessories(reading: QingpingReading): void {
+    const obsoleteKeys = [
+      'battery',
+      'ventilationNeeded',
+      'airPurifierRecommended',
+      'humidifierRecommended',
+      'dehumidifierRecommended',
+      'quietModeRecommended',
+      'cloudStale',
+    ];
+
+    if (this.config.exposeNoiseAsLightSensor === false) {
+      obsoleteKeys.push('noise');
+    }
+
+    if (this.config.exposeMetricTilesAsLightSensors !== true) {
+      obsoleteKeys.push('co2Tile', 'pm25Tile', 'pm10Tile', 'tvocTile');
+    }
+
+    const accessoriesToRemove = obsoleteKeys
+      .map(key => this.api.hap.uuid.generate(`${PLATFORM_NAME}:${reading.id}:${key}`))
+      .map(uuid => this.accessories.get(uuid))
+      .filter((accessory): accessory is PlatformAccessory => accessory !== undefined);
+
+    if (accessoriesToRemove.length === 0) {
+      return;
+    }
+
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, accessoriesToRemove);
+    for (const accessory of accessoriesToRemove) {
+      this.accessories.delete(accessory.UUID);
+      this.log.info(`Removed obsolete Qingping accessory: ${accessory.displayName}`);
+    }
+  }
 }
 
 function resolveThresholds(config: QingpingPlatformConfig): AlertThresholds {
@@ -148,7 +184,6 @@ function formatReading(reading: QingpingReading): string {
     formatValue('PM10', reading.pm10, 'ug/m3'),
     formatValue('TVOC', reading.tvoc, ''),
     formatValue('Noise', reading.noiseDb, 'dB'),
-    formatValue('Battery', reading.batteryPercent, '%'),
   ].filter(Boolean).join(' ');
 }
 

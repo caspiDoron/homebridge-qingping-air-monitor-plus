@@ -23,7 +23,6 @@ class MonitorAccessoryGroup {
         this.updateHumidity(reading);
         this.updateAirQuality(reading);
         this.updateCarbonDioxide(reading, alerts);
-        this.updateBattery(reading);
         if (this.exposeNoiseAsLightSensor) {
             this.updateNoise(reading);
         }
@@ -33,12 +32,12 @@ class MonitorAccessoryGroup {
             this.updateMetricTile('pm10Tile', `${reading.name} PM10 Level`, reading.pm10, 1000);
             this.updateMetricTile('tvocTile', `${reading.name} TVOC Level`, reading.tvoc, 5000);
         }
-        this.updateAlert('ventilationNeeded', 'Ventilation Needed', alerts.ventilationNeeded);
-        this.updateAlert('airPurifierRecommended', 'Air Purifier Recommended', alerts.airPurifierRecommended);
-        this.updateAlert('humidifierRecommended', 'Humidifier Recommended', alerts.humidifierRecommended);
-        this.updateAlert('dehumidifierRecommended', 'Dehumidifier Recommended', alerts.dehumidifierRecommended);
-        this.updateAlert('quietModeRecommended', 'Quiet Mode Recommended', alerts.quietModeRecommended);
-        this.updateAlert('cloudStale', 'Qingping Cloud Stale', alerts.stale);
+        this.updateAlert('openWindowRecommended', 'Open Window Recommended', alerts.ventilationNeeded);
+        this.updateAlert('airPurifierRecommendedAlert', 'Air Purifier Recommended', alerts.airPurifierRecommended);
+        this.updateAlert('humidifierRecommendedAlert', 'Humidifier Recommended', alerts.humidifierRecommended);
+        this.updateAlert('dehumidifierRecommendedAlert', 'Dehumidifier Recommended', alerts.dehumidifierRecommended);
+        this.updateAlert('loudNoiseDetected', 'Loud Noise Detected', alerts.noiseHigh);
+        this.updateAlert('qingpingCloudOffline', 'Qingping Cloud Offline', alerts.stale);
     }
     updateTemperature(reading) {
         if (reading.temperatureC === undefined) {
@@ -76,23 +75,6 @@ class MonitorAccessoryGroup {
             service.updateCharacteristic(this.Characteristic.CarbonDioxideLevel, clamp(reading.co2Ppm, 0, 100000));
         }
     }
-    updateBattery(reading) {
-        if (reading.batteryPercent === undefined && reading.charging === undefined) {
-            return;
-        }
-        const service = this.getPrimaryService('battery', `${reading.name} Battery`, this.Service.Battery);
-        if (reading.batteryPercent !== undefined) {
-            service.updateCharacteristic(this.Characteristic.BatteryLevel, clamp(reading.batteryPercent, 0, 100));
-            service.updateCharacteristic(this.Characteristic.StatusLowBattery, reading.batteryPercent < 20
-                ? this.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW
-                : this.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
-        }
-        if (reading.charging !== undefined) {
-            service.updateCharacteristic(this.Characteristic.ChargingState, reading.charging
-                ? this.Characteristic.ChargingState.CHARGING
-                : this.Characteristic.ChargingState.NOT_CHARGING);
-        }
-    }
     updateNoise(reading) {
         if (reading.noiseDb === undefined) {
             return;
@@ -108,10 +90,10 @@ class MonitorAccessoryGroup {
         service.updateCharacteristic(this.Characteristic.CurrentAmbientLightLevel, clamp(value, 0.0001, max));
     }
     updateAlert(key, name, active) {
-        const service = this.getPrimaryService(key, name, this.Service.OccupancySensor);
-        service.updateCharacteristic(this.Characteristic.OccupancyDetected, active
-            ? this.Characteristic.OccupancyDetected.OCCUPANCY_DETECTED
-            : this.Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED);
+        const service = this.getPrimaryService(key, name, this.Service.ContactSensor);
+        service.updateCharacteristic(this.Characteristic.ContactSensorState, active
+            ? this.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+            : this.Characteristic.ContactSensorState.CONTACT_DETECTED);
     }
     getPrimaryService(key, name, ServiceClass) {
         const accessory = this.getAccessory(key, name);

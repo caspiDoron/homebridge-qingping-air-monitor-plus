@@ -27,7 +27,6 @@ export interface AlertThresholds {
     temperatureHigh: number;
     noiseHighDb: number;
     staleAfterMinutes: number;
-    lowBatteryPercent: number;
 }
 export interface QingpingReading {
     id: string;
@@ -54,7 +53,6 @@ export interface AlertState {
     temperatureLow: boolean;
     temperatureHigh: boolean;
     noiseHigh: boolean;
-    lowBattery: boolean;
     stale: boolean;
     ventilationNeeded: boolean;
     airPurifierRecommended: boolean;

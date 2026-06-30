@@ -2,7 +2,7 @@
   "pluginAlias": "QingpingAirMonitorPlus",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Cloud-first Qingping Air Monitor plugin. Noise is exposed as a Light Sensor because HomeKit has no native decibel sensor; the displayed lux value equals dB.",
+  "headerDisplay": "Cloud-first Qingping Air Monitor plugin. Alerts are exposed as contact sensors so HomeKit can notify you when action is needed. Optional metric tiles use Light Sensor values as a HomeKit display workaround.",
   "schema": {
     "type": "object",
     "properties": {
@@ -45,9 +45,9 @@
       },
       "exposeNoiseAsLightSensor": {
         "title": "Expose Noise as Light Sensor",
-        "description": "HomeKit has no dB sensor. When enabled, the Noise Level light sensor shows lux equal to dB.",
+        "description": "Optional workaround. HomeKit has no dB sensor; when enabled, the Noise Level light sensor shows lux equal to dB.",
         "type": "boolean",
-        "default": true
+        "default": false
       },
       "exposeMetricTilesAsLightSensors": {
         "title": "Expose Metric Value Tiles",
@@ -123,11 +123,6 @@
           },
           "staleAfterMinutes": {
             "title": "Cloud Data Stale After",
-            "type": "integer",
-            "default": 20
-          },
-          "lowBatteryPercent": {
-            "title": "Low Battery Below",
             "type": "integer",
             "default": 20
           }

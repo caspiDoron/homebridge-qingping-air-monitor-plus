@@ -51,6 +51,7 @@ class QingpingAirMonitorPlusPlatform {
         try {
             const reading = await this.client.fetchReading();
             this.unregisterLegacyAccessory(reading);
+            this.unregisterObsoleteAccessories(reading);
             if (!this.monitorAccessories) {
                 this.monitorAccessories = new monitorAccessoryGroup_1.MonitorAccessoryGroup(this.log, this.api, (key, name) => this.getOrCreateAccessory(reading, key, name), this.config.exposeNoiseAsLightSensor !== false, this.config.exposeMetricTilesAsLightSensors === true);
             }
@@ -88,6 +89,35 @@ class QingpingAirMonitorPlusPlatform {
         this.accessories.delete(legacyUuid);
         this.log.info(`Removed legacy bundled Qingping accessory: ${reading.name}`);
     }
+    unregisterObsoleteAccessories(reading) {
+        const obsoleteKeys = [
+            'battery',
+            'ventilationNeeded',
+            'airPurifierRecommended',
+            'humidifierRecommended',
+            'dehumidifierRecommended',
+            'quietModeRecommended',
+            'cloudStale',
+        ];
+        if (this.config.exposeNoiseAsLightSensor === false) {
+            obsoleteKeys.push('noise');
+        }
+        if (this.config.exposeMetricTilesAsLightSensors !== true) {
+            obsoleteKeys.push('co2Tile', 'pm25Tile', 'pm10Tile', 'tvocTile');
+        }
+        const accessoriesToRemove = obsoleteKeys
+            .map(key => this.api.hap.uuid.generate(`${settings_1.PLATFORM_NAME}:${reading.id}:${key}`))
+            .map(uuid => this.accessories.get(uuid))
+            .filter((accessory) => accessory !== undefined);
+        if (accessoriesToRemove.length === 0) {
+            return;
+        }
+        this.api.unregisterPlatformAccessories(settings_1.PLUGIN_NAME, settings_1.PLATFORM_NAME, accessoriesToRemove);
+        for (const accessory of accessoriesToRemove) {
+            this.accessories.delete(accessory.UUID);
+            this.log.info(`Removed obsolete Qingping accessory: ${accessory.displayName}`);
+        }
+    }
 }
 exports.QingpingAirMonitorPlusPlatform = QingpingAirMonitorPlusPlatform;
 function resolveThresholds(config) {
@@ -107,7 +137,6 @@ function formatReading(reading) {
         formatValue('PM10', reading.pm10, 'ug/m3'),
         formatValue('TVOC', reading.tvoc, ''),
         formatValue('Noise', reading.noiseDb, 'dB'),
-        formatValue('Battery', reading.batteryPercent, '%'),
     ].filter(Boolean).join(' ');
 }
 function formatValue(label, value, unit) {
