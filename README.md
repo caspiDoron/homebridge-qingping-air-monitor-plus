@@ -93,6 +93,26 @@ npm install
 npm run build
 ```
 
+## Docker Testing Install
+
+The official Homebridge Docker image often starts Homebridge with strict plugin resolution:
+
+```text
+-P /var/lib/homebridge/node_modules --strict-plugin-resolution
+```
+
+In that setup, do not install this plugin with `npm install -g`. Install it into the Homebridge storage package instead:
+
+```sh
+docker exec -it homebridge sh
+cd /var/lib/homebridge
+npm install --save https://github.com/caspiDoron/homebridge-qingping-air-monitor-plus.git
+exit
+docker restart homebridge
+```
+
+If the container has a different name, replace `homebridge` with the name shown by `docker ps`.
+
 ## Status
 
 Initial scaffold. The next validation step is testing with real Qingping cloud credentials and a real device payload.
