@@ -18,8 +18,8 @@
     "noise"
   ],
   "engines": {
-    "node": ">=22.12.0",
-    "homebridge": ">=2.0.0"
+    "node": "^18.20.4 || ^20.16.0 || >=22.6.0",
+    "homebridge": ">=1.8.0"
   },
   "homebridge": {
     "pluginAlias": "QingpingAirMonitorPlus",
